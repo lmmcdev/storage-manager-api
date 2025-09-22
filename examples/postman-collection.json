@@ -1,0 +1,372 @@
+{
+  "info": {
+    "name": "Storage Manager API",
+    "description": "Complete collection for Azure Functions file storage API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:7071/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "dev-key-1",
+      "type": "string"
+    },
+    {
+      "key": "container",
+      "value": "uploads",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Upload File (Multipart)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "container",
+              "value": "{{container}}",
+              "type": "text"
+            },
+            {
+              "key": "path",
+              "value": "examples/uploads",
+              "type": "text"
+            },
+            {
+              "key": "metadata",
+              "value": "{\"category\":\"example\",\"source\":\"postman\"}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "upload"]
+        }
+      }
+    },
+    {
+      "name": "Upload File (JSON Base64)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contentBase64\": \"SGVsbG8gV29ybGQgZnJvbSBQb3N0bWFuIQ==\",\n  \"filename\": \"hello-postman.txt\",\n  \"contentType\": \"text/plain\",\n  \"container\": \"{{container}}\",\n  \"path\": \"examples/json-uploads\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"type\": \"text\",\n    \"encoding\": \"base64\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "upload"]
+        }
+      }
+    },
+    {
+      "name": "Download File",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/{{container}}/examples/uploads/sample.txt",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "{{container}}", "examples", "uploads", "sample.txt"]
+        }
+      }
+    },
+    {
+      "name": "Download File (Force Download)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/{{container}}/examples/uploads/sample.txt?download=1",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "{{container}}", "examples", "uploads", "sample.txt"],
+          "query": [
+            {
+              "key": "download",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Download File (Range Request)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          },
+          {
+            "key": "Range",
+            "value": "bytes=0-1023",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/{{container}}/examples/uploads/sample.txt",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "{{container}}", "examples", "uploads", "sample.txt"]
+        }
+      }
+    },
+    {
+      "name": "List Files",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/list?container={{container}}&max=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "list"],
+          "query": [
+            {
+              "key": "container",
+              "value": "{{container}}"
+            },
+            {
+              "key": "max",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "List Files with Prefix",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/list?container={{container}}&prefix=examples/&max=50",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "list"],
+          "query": [
+            {
+              "key": "container",
+              "value": "{{container}}"
+            },
+            {
+              "key": "prefix",
+              "value": "examples/"
+            },
+            {
+              "key": "max",
+              "value": "50"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate SAS URL (Read)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"container\": \"{{container}}\",\n  \"blobName\": \"examples/uploads/sample.txt\",\n  \"permissions\": \"r\",\n  \"expiresInSeconds\": 3600\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/sas",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "sas"]
+        }
+      }
+    },
+    {
+      "name": "Generate SAS URL (Read/Write)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"container\": \"{{container}}\",\n  \"blobName\": \"examples/sas-uploads/new-file.txt\",\n  \"permissions\": \"rw\",\n  \"expiresInSeconds\": 1800\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/sas",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "sas"]
+        }
+      }
+    },
+    {
+      "name": "Copy File",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": {\n    \"container\": \"{{container}}\",\n    \"blobName\": \"examples/uploads/sample.txt\"\n  },\n  \"target\": {\n    \"container\": \"{{container}}\",\n    \"blobName\": \"examples/copies/sample-copy.txt\"\n  },\n  \"move\": false,\n  \"metadata\": {\n    \"operation\": \"copy\",\n    \"source\": \"postman\",\n    \"timestamp\": \"2024-01-15T10:30:00Z\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/copy",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "copy"]
+        }
+      }
+    },
+    {
+      "name": "Move File",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": {\n    \"container\": \"{{container}}\",\n    \"blobName\": \"examples/temp/temp-file.txt\"\n  },\n  \"target\": {\n    \"container\": \"{{container}}\",\n    \"blobName\": \"examples/archived/moved-file.txt\"\n  },\n  \"move\": true,\n  \"metadata\": {\n    \"operation\": \"move\",\n    \"movedBy\": \"postman\",\n    \"archivedAt\": \"2024-01-15T10:30:00Z\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/files/copy",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "copy"]
+        }
+      }
+    },
+    {
+      "name": "Delete File",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "x-api-key",
+            "value": "{{apiKey}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/files/{{container}}/examples/temp/file-to-delete.txt",
+          "host": ["{{baseUrl}}"],
+          "path": ["files", "{{container}}", "examples", "temp", "file-to-delete.txt"]
+        }
+      }
+    }
+  ]
+}
