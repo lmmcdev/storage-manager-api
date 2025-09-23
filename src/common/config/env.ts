@@ -8,8 +8,16 @@ const envSchema = z.object({
   AZURE_STORAGE_ACCOUNT: z.string().optional(),
   AZURE_STORAGE_CONNECTION_STRING: z.string().optional(),
   AZURE_STORAGE_CONTAINER_DEFAULT: z.string().default('uploads'),
-  AUTH_MODE: z.enum(['aad', 'apikey']).default('apikey'),
+  AUTH_MODE: z.enum(['aad', 'apikey', 'jwt']).default('aad'),
   API_KEYS: z.string().optional(),
+  AZURE_TENANT_ID: z.string().optional(),
+  AZURE_CLIENT_ID: z.string().optional(),
+  AZURE_CLIENT_SECRET: z.string().optional(),
+  AZURE_APP_ID: z.string().optional(),
+  JWT_ACCESS_SECRET: z.string().optional(),
+  JWT_REFRESH_SECRET: z.string().optional(),
+  JWT_ACCESS_EXPIRY: z.string().default('15m'),
+  JWT_REFRESH_EXPIRY: z.string().default('7d'),
   ALLOWED_ROLES: z
     .string()
     .default('files.read,files.write,files.delete,files.sas'),
