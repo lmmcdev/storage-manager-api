@@ -259,7 +259,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"fileName\": \"test-file.txt\",\n  \"content\": \"VGhpcyBpcyBhIHRlc3QgZmlsZSBjb250ZW50\",\n  \"contentType\": \"text/plain\",\n  \"container\": \"{{containerName}}\",\n  \"path\": \"json-uploads/test-file.txt\",\n  \"metadata\": {\n    \"uploadMethod\": \"json\",\n    \"author\": \"postman-test\"\n  }\n}",
+							"raw": "{\n  \"filename\": \"test-file.txt\",\n  \"contentBase64\": \"VGhpcyBpcyBhIHRlc3QgZmlsZSBjb250ZW50\",\n  \"contentType\": \"text/plain\",\n  \"container\": \"{{containerName}}\",\n  \"path\": \"json-uploads/test-file.txt\",\n  \"metadata\": {\n    \"uploadMethod\": \"json\",\n    \"author\": \"postman-test\"\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -313,12 +313,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/files/{{containerName}}/{{uploadedBlobPath}}?download=true",
+							"raw": "{{baseUrl}}/files/download/{{containerName}}/{{uploadedBlobPath}}?download=true",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"files",
+								"download",
 								"{{containerName}}",
 								"{{uploadedBlobPath}}"
 							],
@@ -372,12 +373,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/files/{{containerName}}/{{uploadedBlobPath}}",
+							"raw": "{{baseUrl}}/files/download/{{containerName}}/{{uploadedBlobPath}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"files",
+								"download",
 								"{{containerName}}",
 								"{{uploadedBlobPath}}"
 							]
@@ -408,7 +410,7 @@
 						}
 					],
 					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -471,7 +473,7 @@
 						}
 					],
 					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -595,13 +597,8 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
 							{
 								"key": "x-api-key",
 								"value": "{{apiKey}}",
@@ -613,23 +610,28 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"container\": \"{{containerName}}\",\n  \"blobName\": \"{{uploadedBlobPath}}\",\n  \"permissions\": \"r\",\n  \"expiresInSeconds\": 3600\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{baseUrl}}/files/sas",
+							"raw": "{{baseUrl}}/files/sas/{{containerName}}/{{uploadedBlobPath}}?permissions=r&expiresInSeconds=3600",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"files",
-								"sas"
+								"sas",
+								"{{containerName}}",
+								"{{uploadedBlobPath}}"
+							],
+							"query": [
+								{
+									"key": "permissions",
+									"value": "r",
+									"description": "SAS permissions (r=read, w=write, rw=read/write)"
+								},
+								{
+									"key": "expiresInSeconds",
+									"value": "3600",
+									"description": "Expiration time in seconds"
+								}
 							]
 						}
 					},
@@ -657,13 +659,8 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
 							{
 								"key": "x-api-key",
 								"value": "{{apiKey}}",
@@ -675,23 +672,29 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"container\": \"{{containerName}}\",\n  \"blobName\": \"sas-uploads/test-file.txt\",\n  \"permissions\": \"rw\",\n  \"expiresInSeconds\": 1800\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{baseUrl}}/files/sas",
+							"raw": "{{baseUrl}}/files/sas/{{containerName}}/sas-uploads/test-file.txt?permissions=rw&expiresInSeconds=1800",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"files",
-								"sas"
+								"sas",
+								"{{containerName}}",
+								"sas-uploads",
+								"test-file.txt"
+							],
+							"query": [
+								{
+									"key": "permissions",
+									"value": "rw",
+									"description": "SAS permissions (r=read, w=write, rw=read/write)"
+								},
+								{
+									"key": "expiresInSeconds",
+									"value": "1800",
+									"description": "Expiration time in seconds"
+								}
 							]
 						}
 					},

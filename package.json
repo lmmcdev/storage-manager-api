@@ -2,7 +2,7 @@
   "name": "storage-manager-api",
   "version": "1.0.0",
   "description": "Production-ready Azure Functions API for file storage management with Azure Blob Storage",
-  "main": "dist/src/functions/*.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
