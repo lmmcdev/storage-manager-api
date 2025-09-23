@@ -4,12 +4,19 @@
 
 import { HttpRequest } from '@azure/functions';
 import { FilesUploadController } from '../controllers/files-upload.controller';
+import { BlobStorageService } from '../../../common/services/blob-storage.service';
+
+// Mock dependencies
+jest.mock('../../../common/services/blob-storage.service');
 
 describe('FilesUploadController', () => {
   let controller: FilesUploadController;
+  let mockBlobStorageService: jest.Mocked<BlobStorageService>;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     controller = new FilesUploadController();
+    mockBlobStorageService = jest.mocked(controller['blobStorageService']);
   });
 
   describe('uploadForm', () => {
