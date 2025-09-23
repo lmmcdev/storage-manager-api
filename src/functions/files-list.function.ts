@@ -10,7 +10,7 @@ import {
   handleOptionsRequest,
   withErrorHandling,
 } from '../shared/http';
-import { env } from '../shared/env';
+import { env } from '../config/env';
 
 async function filesList(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
   const requestId = getRequestId(request);

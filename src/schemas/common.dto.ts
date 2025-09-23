@@ -7,7 +7,7 @@ export const fileParamsSchema = z.object({
 });
 
 export const downloadQuerySchema = z.object({
-  download: z.union([z.string(), z.undefined()]).transform(val => val === '1' || val === 'true').default(false),
+  download: z.string().optional().default('false').transform(val => val === '1' || val === 'true'),
 });
 
 export type FileParams = z.infer<typeof fileParamsSchema>;

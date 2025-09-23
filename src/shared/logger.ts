@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { env } from './env';
+import { env } from '../config/env';
 
 const redactedKeys = [
   'password',
@@ -8,13 +8,15 @@ const redactedKeys = [
   'key',
   'authorization',
   'cookie',
-  'x-api-key',
   'connectionString',
   'sas',
-  'signature'
+  'signature',
+  'apiKey',
+  'accountKey'
 ];
 
-const logger = pino({
+// Create logger configuration without transport initially
+const baseConfig: pino.LoggerOptions = {
   level: env.LOG_LEVEL,
   redact: env.REDACT_SECRETS ? {
     paths: redactedKeys,
@@ -24,17 +26,32 @@ const logger = pino({
     level: (label) => ({ level: label }),
   },
   timestamp: pino.stdTimeFunctions.isoTime,
-  ...(env.NODE_ENV === 'development' && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        ignore: 'pid,hostname',
-        translateTime: 'yyyy-mm-dd HH:MM:ss',
+};
+
+// Only use pino-pretty in development and when running locally (not in Azure Functions runtime)
+let loggerConfig = baseConfig;
+if (env.NODE_ENV === 'development' && !process.env.FUNCTIONS_WORKER_RUNTIME) {
+  try {
+    // Test if pino-pretty is available
+    require.resolve('pino-pretty');
+    loggerConfig = {
+      ...baseConfig,
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          ignore: 'pid,hostname',
+          translateTime: 'yyyy-mm-dd HH:MM:ss',
+        },
       },
-    },
-  }),
-});
+    };
+  } catch (error) {
+    // pino-pretty not available, use base config
+    console.warn('pino-pretty not available, using basic JSON logging');
+  }
+}
+
+const logger = pino(loggerConfig);
 
 export interface LogContext {
   requestId?: string;

@@ -1,4 +1,4 @@
-import { validateRequiredEnv } from '../shared/env';
+import { validateRequiredEnv } from '../config/env';
 
 process.env.NODE_ENV = 'test';
 process.env.AUTH_MODE = 'apikey';

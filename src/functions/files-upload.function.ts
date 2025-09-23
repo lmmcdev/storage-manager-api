@@ -14,7 +14,7 @@ import {
   withErrorHandling,
 } from '../shared/http';
 import { BadRequestError } from '../shared/errors';
-import { env } from '../shared/env';
+import { env } from '../config/env';
 
 async function filesUpload(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   const requestId = getRequestId(request);

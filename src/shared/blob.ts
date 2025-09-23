@@ -8,10 +8,11 @@ import {
   generateBlobSASQueryParameters,
   StorageSharedKeyCredential,
   BlobHTTPHeaders,
+  BlobItem,
 } from '@azure/storage-blob';
 import { DefaultAzureCredential } from '@azure/identity';
 import { Readable } from 'stream';
-import { env } from './env';
+import { env } from '../config/env';
 import { createErrorFromStorageError } from './errors';
 import { Logger } from './logger';
 
@@ -133,7 +134,7 @@ export class BlobStorageService {
       if (content instanceof Buffer) {
         uploadResponse = await blobClient.upload(content, content.length, uploadOptions);
       } else {
-        uploadResponse = await blobClient.uploadStream(content, undefined, undefined, uploadOptions);
+        uploadResponse = await blobClient.uploadStream(content as Readable, undefined, undefined, uploadOptions);
       }
 
       const properties = await blobClient.getProperties();
@@ -177,14 +178,9 @@ export class BlobStorageService {
     try {
       const blobClient = this.getBlobClient(containerName, blobName);
 
-      const downloadOptions = range ? {
-        range: {
-          offset: range.start,
-          count: range.end - range.start + 1,
-        },
-      } : undefined;
-
-      const downloadResponse = await blobClient.download(0, undefined, downloadOptions);
+      const downloadResponse = range 
+        ? await blobClient.download(range.start, range.end - range.start + 1)
+        : await blobClient.download();
 
       this.logger.info(`Blob downloaded successfully`, {
         container: containerName,
@@ -249,7 +245,7 @@ export class BlobStorageService {
       const page = await iterator.next();
       const blobs = page.value;
 
-      const items: BlobInfo[] = blobs.segment.blobItems.map(blob => ({
+      const items: BlobInfo[] = blobs.segment.blobItems.map((blob: BlobItem) => ({
         name: blob.name,
         url: `${containerClient.url}/${blob.name}`,
         size: blob.properties.contentLength || 0,

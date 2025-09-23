@@ -2,7 +2,7 @@ import { HttpRequest, HttpResponseInit } from '@azure/functions';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiError, InternalError } from './errors';
 import { Logger, logError } from './logger';
-import { getCorsOrigins } from './env';
+import { getCorsOrigins } from '../config/env';
 
 export interface SuccessResponse<T = unknown> {
   data: T;
@@ -85,7 +85,7 @@ export function createStreamResponse(
   return {
     status: 200,
     headers,
-    body: stream,
+    body: stream as any,
   };
 }
 

@@ -1,0 +1,782 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Storage Manager API",
+		"description": "Production-ready Azure Functions API for file storage management with Azure Blob Storage",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Get Health Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has health status\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('status');",
+									"    pm.expect(jsonData.data.status).to.be.oneOf(['healthy', 'unhealthy']);",
+									"});",
+									"",
+									"pm.test(\"Response has storage service status\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.services.storage).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "File Operations",
+			"item": [
+				{
+					"name": "List Files",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has files array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('items');",
+									"    pm.expect(jsonData.data.items).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/files/list?container={{containerName}}&prefix={{prefix}}&max=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"list"
+							],
+							"query": [
+								{
+									"key": "container",
+									"value": "{{containerName}}"
+								},
+								{
+									"key": "prefix",
+									"value": "{{prefix}}",
+									"description": "Optional prefix filter"
+								},
+								{
+									"key": "max",
+									"value": "50",
+									"description": "Maximum number of results (1-1000)"
+								},
+								{
+									"key": "continuationToken",
+									"value": "",
+									"description": "For pagination",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload File (Form Data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has upload result\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('url');",
+									"    pm.expect(jsonData.data).to.have.property('etag');",
+									"});",
+									"",
+									"// Store the blob path for use in other requests",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('uploadedBlobPath', jsonData.data.blobName);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Select a file to upload"
+								},
+								{
+									"key": "container",
+									"value": "{{containerName}}",
+									"type": "text",
+									"description": "Container name (optional, uses default if not provided)"
+								},
+								{
+									"key": "path",
+									"value": "uploads/{{$randomFileName}}",
+									"type": "text",
+									"description": "Optional path within container"
+								},
+								{
+									"key": "metadata",
+									"value": "{\"author\": \"postman\", \"purpose\": \"testing\"}",
+									"type": "text",
+									"description": "Optional JSON metadata"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload File (JSON)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has upload result\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('url');",
+									"    pm.expect(jsonData.data).to.have.property('etag');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fileName\": \"test-file.txt\",\n  \"content\": \"VGhpcyBpcyBhIHRlc3QgZmlsZSBjb250ZW50\",\n  \"contentType\": \"text/plain\",\n  \"container\": \"{{containerName}}\",\n  \"path\": \"json-uploads/test-file.txt\",\n  \"metadata\": {\n    \"uploadMethod\": \"json\",\n    \"author\": \"postman-test\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has content\", function () {",
+									"    pm.expect(pm.response.responseSize).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/files/{{containerName}}/{{uploadedBlobPath}}?download=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"{{containerName}}",
+								"{{uploadedBlobPath}}"
+							],
+							"query": [
+								{
+									"key": "download",
+									"value": "true",
+									"description": "Force download as attachment"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download File with Range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 206\", function () {",
+									"    pm.response.to.have.status(206);",
+									"});",
+									"",
+									"pm.test(\"Response has partial content\", function () {",
+									"    pm.expect(pm.response.headers.get('Content-Range')).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							},
+							{
+								"key": "Range",
+								"value": "bytes=0-100",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/files/{{containerName}}/{{uploadedBlobPath}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"{{containerName}}",
+								"{{uploadedBlobPath}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Copy File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has copy result\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('url');",
+									"    pm.expect(jsonData.data).to.have.property('etag');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source\": {\n    \"container\": \"{{containerName}}\",\n    \"blobName\": \"{{uploadedBlobPath}}\"\n  },\n  \"target\": {\n    \"container\": \"{{containerName}}\",\n    \"blobName\": \"copies/{{uploadedBlobPath}}\"\n  },\n  \"move\": false,\n  \"metadata\": {\n    \"copySource\": \"{{uploadedBlobPath}}\",\n    \"copyTimestamp\": \"{{$isoTimestamp}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/copy",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"copy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Move File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has move result\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('url');",
+									"    pm.expect(jsonData.data).to.have.property('etag');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"source\": {\n    \"container\": \"{{containerName}}\",\n    \"blobName\": \"{{uploadedBlobPath}}\"\n  },\n  \"target\": {\n    \"container\": \"{{containerName}}\",\n    \"blobName\": \"moved/{{uploadedBlobPath}}\"\n  },\n  \"move\": true,\n  \"metadata\": {\n    \"moveSource\": \"{{uploadedBlobPath}}\",\n    \"moveTimestamp\": \"{{$isoTimestamp}}\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/copy",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"copy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response confirms deletion\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('deleted');",
+									"    pm.expect(jsonData.data.deleted).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/files/{{containerName}}/copies/{{uploadedBlobPath}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"{{containerName}}",
+								"copies",
+								"{{uploadedBlobPath}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SAS (Shared Access Signature)",
+			"item": [
+				{
+					"name": "Generate SAS URL - Read",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has SAS URL\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('sasUrl');",
+									"    pm.expect(jsonData.data).to.have.property('expiresAt');",
+									"    pm.expect(jsonData.data.sasUrl).to.include('?');",
+									"});",
+									"",
+									"// Store SAS URL for testing",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('sasUrl', jsonData.data.sasUrl);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"container\": \"{{containerName}}\",\n  \"blobName\": \"{{uploadedBlobPath}}\",\n  \"permissions\": \"r\",\n  \"expiresInSeconds\": 3600\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/sas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"sas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate SAS URL - Read/Write",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has SAS URL\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('sasUrl');",
+									"    pm.expect(jsonData.data).to.have.property('expiresAt');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"container\": \"{{containerName}}\",\n  \"blobName\": \"sas-uploads/test-file.txt\",\n  \"permissions\": \"rw\",\n  \"expiresInSeconds\": 1800\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/files/sas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"files",
+								"sas"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test SAS URL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Can access file via SAS URL\", function () {",
+							"    pm.expect(pm.response.responseSize).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{sasUrl}}",
+					"host": [
+						"{{sasUrl}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Generate a random file name if not set",
+					"if (!pm.environment.get('uploadedBlobPath')) {",
+					"    pm.environment.set('uploadedBlobPath', 'test-files/' + pm.variables.replaceIn('{{$randomFileName}}'));",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test to check for request ID header",
+					"pm.test(\"Response includes request ID\", function () {",
+					"    pm.expect(pm.response.headers.has('x-request-id')).to.be.true;",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:7071/api",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "dev-key-1",
+			"type": "string"
+		},
+		{
+			"key": "containerName",
+			"value": "uploads",
+			"type": "string"
+		},
+		{
+			"key": "prefix",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -1,6 +1,6 @@
 import { HttpRequest } from '@azure/functions';
 import jwt from 'jsonwebtoken';
-import { env, getApiKeys, getAllowedRoles } from './env';
+import { env, getApiKeys, getAllowedRoles } from '../config/env';
 import { UnauthorizedError, ForbiddenError } from './errors';
 
 export interface AuthContext {

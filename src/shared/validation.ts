@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { BadRequestError } from './errors';
 
-export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown, requestId: string): T {
+export function validateBody<T extends z.ZodTypeAny>(schema: T, body: unknown, requestId: string): z.infer<T> {
   try {
     return schema.parse(body);
   } catch (error) {
@@ -18,7 +18,7 @@ export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown, requestId
   }
 }
 
-export function validateQuery<T>(schema: z.ZodSchema<T>, query: URLSearchParams, requestId: string): T {
+export function validateQuery<T extends z.ZodTypeAny>(schema: T, query: URLSearchParams, requestId: string): z.infer<T> {
   try {
     const queryObject = Object.fromEntries(query.entries());
     return schema.parse(queryObject);
@@ -36,7 +36,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>, query: URLSearchParams,
   }
 }
 
-export function validateParams<T>(schema: z.ZodSchema<T>, params: Record<string, string>, requestId: string): T {
+export function validateParams<T extends z.ZodTypeAny>(schema: T, params: Record<string, string>, requestId: string): z.infer<T> {
   try {
     return schema.parse(params);
   } catch (error) {

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import 'dotenv/config';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -9,9 +10,9 @@ const envSchema = z.object({
   API_KEYS: z.string().optional(),
   ALLOWED_ROLES: z.string().default('files.read,files.write,files.delete,files.sas'),
   CORS_ALLOWED_ORIGINS: z.string().default('*'),
-  SAS_DEFAULT_EXP_SECONDS: z.string().transform(Number).default(900),
+  SAS_DEFAULT_EXP_SECONDS: z.string().default('900').transform(Number),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
-  REDACT_SECRETS: z.string().transform(val => val === 'true').default(true),
+  REDACT_SECRETS: z.string().default('true').transform(val => val === 'true'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

@@ -8,19 +8,35 @@ import {
   getRequestId,
   handleOptionsRequest,
   createStreamResponse,
+  createSuccessResponse,
   parseRangeHeader,
   withErrorHandling,
 } from '../shared/http';
 import { BadRequestError } from '../shared/errors';
 import path from 'path';
 
-async function filesGet(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
+async function filesHandler(request: HttpRequest, _context: InvocationContext): Promise<HttpResponseInit> {
   const requestId = getRequestId(request);
-  const logger = createLogger({ requestId, operation: 'download' });
-
+  
   if (request.method === 'OPTIONS') {
     return handleOptionsRequest(requestId);
   }
+
+  if (request.method === 'GET') {
+    return handleFileDownload(request, requestId);
+  } else if (request.method === 'DELETE') {
+    return handleFileDelete(request, requestId);
+  }
+
+  return {
+    status: 405,
+    headers: { 'Content-Type': 'application/json' },
+    jsonBody: { error: 'Method not allowed' }
+  };
+}
+
+async function handleFileDownload(request: HttpRequest, requestId: string): Promise<HttpResponseInit> {
+  const logger = createLogger({ requestId, operation: 'download' });
 
   return withErrorHandling(async () => {
     const authContext = await authenticate(request, requestId);
@@ -91,9 +107,42 @@ async function filesGet(request: HttpRequest, _context: InvocationContext): Prom
   }, requestId, logger);
 }
 
-app.http('files-get', {
-  methods: ['GET', 'OPTIONS'],
+async function handleFileDelete(request: HttpRequest, requestId: string): Promise<HttpResponseInit> {
+  const logger = createLogger({ requestId, operation: 'delete' });
+
+  return withErrorHandling(async () => {
+    const authContext = await authenticate(request, requestId);
+    requireRole(authContext, 'files.delete', requestId);
+
+    const params = validateParams(fileParamsSchema, request.params, requestId);
+
+    const blobStorageService = new BlobStorageService(logger);
+
+    logger.debug('Processing file deletion', {
+      container: params.container,
+      blobPath: params.blobPath,
+    });
+
+    await blobStorageService.deleteBlob(params.container, params.blobPath, requestId);
+
+    const result = {
+      deleted: true,
+      container: params.container,
+      blobName: params.blobPath,
+    };
+
+    logger.info('File deletion completed successfully', {
+      container: params.container,
+      blobPath: params.blobPath,
+    });
+
+    return createSuccessResponse(result, requestId, 200);
+  }, requestId, logger);
+}
+
+app.http('files-operations', {
+  methods: ['GET', 'DELETE', 'OPTIONS'],
   authLevel: 'anonymous',
   route: 'files/{container}/{*blobPath}',
-  handler: filesGet,
+  handler: filesHandler,
 });
