@@ -28,7 +28,7 @@ export class JwtService {
       expiresIn: this.accessTokenExpiry,
       issuer: 'storage-manager-api',
       audience: 'storage-manager-client',
-    });
+    } as jwt.SignOptions);
 
     const refreshToken = jwt.sign(
       { sub: user.id, jti: uuidv4() },
@@ -37,7 +37,7 @@ export class JwtService {
         expiresIn: this.refreshTokenExpiry,
         issuer: 'storage-manager-api',
         audience: 'storage-manager-client',
-      }
+      } as jwt.SignOptions
     );
 
     const decoded = jwt.decode(accessToken) as jwt.JwtPayload;
