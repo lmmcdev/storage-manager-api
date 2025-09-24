@@ -56,7 +56,7 @@ const controller = new FilesCopyController();
 
 app.http('files-copy', {
   methods: ['POST', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/copy',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.copy(request, context),

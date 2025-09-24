@@ -124,7 +124,7 @@ const controller = new FilesUploadController();
 // Unified upload endpoint that handles both form and JSON uploads
 app.http('files-upload', {
   methods: ['POST', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/upload',
   handler: async (request: HttpRequest, context: InvocationContext) => {
     const requestId = getRequestId(request);
@@ -153,7 +153,7 @@ app.http('files-upload', {
 
 app.http('files-upload-form', {
   methods: ['POST', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/upload/form',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.uploadForm(request, context),
@@ -161,7 +161,7 @@ app.http('files-upload-form', {
 
 app.http('files-upload-json', {
   methods: ['POST', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/upload/json',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.uploadJson(request, context),
