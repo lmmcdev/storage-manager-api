@@ -57,7 +57,7 @@ const controller = new FilesSasController();
 
 app.http('files-sas', {
   methods: ['GET', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/sas/{container}/{*blobPath}',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.generateSas(request, context),

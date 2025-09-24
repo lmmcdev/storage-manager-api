@@ -60,7 +60,7 @@ const controller = new FilesListController();
 
 app.http('files-list', {
   methods: ['GET', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/list',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.list(request, context),

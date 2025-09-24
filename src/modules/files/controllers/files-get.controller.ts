@@ -119,7 +119,7 @@ const controller = new FilesGetController();
 
 app.http('files-get', {
   methods: ['GET', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/download/{container}/{*blobPath}',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.get(request, context),

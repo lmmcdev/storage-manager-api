@@ -73,7 +73,7 @@ const controller = new FilesDeleteController();
 
 app.http('files-delete', {
   methods: ['DELETE', 'OPTIONS'],
-  authLevel: 'function',
+  authLevel: 'anonymous',
   route: 'files/{container}/{*blobPath}',
   handler: (request: HttpRequest, context: InvocationContext) =>
     controller.delete(request, context),
